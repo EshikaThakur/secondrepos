@@ -1,0 +1,419 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#08090c;
+  --surface:#0e1117;
+  --surface2:#141720;
+  --border:#1e2330;
+  --border2:#252c3d;
+  --accent:#4ade80;
+  --accent2:#22c55e;
+  --danger:#f87171;
+  --danger2:#ef4444;
+  --warn:#fbbf24;
+  --text:#e8eaf0;
+  --muted:#6b7280;
+  --dim:#3a4055;
+  --mono:'DM Mono',monospace;
+  --display:'Syne',sans-serif;
+}
+
+.wrap{background:var(--bg);color:var(--text);font-family:var(--display);padding:20px;min-height:100vh;position:relative;overflow:hidden}
+
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.4;pointer-events:none}
+
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;position:relative;z-index:1}
+.header-left{}
+.sys-label{font-size:10px;letter-spacing:.2em;color:var(--accent);font-family:var(--mono);margin-bottom:6px;text-transform:uppercase}
+.sys-title{font-size:28px;font-weight:800;line-height:1;letter-spacing:-.02em;color:#fff}
+.sys-title span{color:var(--accent)}
+.header-status{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:11px;color:var(--accent)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--accent)}50%{opacity:.3;box-shadow:none}}
+
+.metrics-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:20px;position:relative;z-index:1}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:border-color .2s}
+.metric:hover{border-color:var(--border2)}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.metric.m-total::before{background:var(--dim)}
+.metric.m-fraud::before{background:var(--danger)}
+.metric.m-legit::before{background:var(--accent)}
+.metric.m-rate::before{background:var(--warn)}
+.metric-val{font-size:26px;font-weight:700;line-height:1;margin-bottom:4px;font-family:var(--mono)}
+.metric.m-total .metric-val{color:var(--text)}
+.metric.m-fraud .metric-val{color:var(--danger)}
+.metric.m-legit .metric-val{color:var(--accent)}
+.metric.m-rate  .metric-val{color:var(--warn)}
+.metric-lbl{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)}
+
+.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:12px;margin-bottom:12px;position:relative;z-index:1}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.panel-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:14px}
+
+.presets{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.pre-btn{font-family:var(--mono);font-size:10px;letter-spacing:.05em;padding:5px 10px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;text-transform:uppercase}
+.pre-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(74,222,128,.06)}
+
+.field{margin-bottom:14px}
+.field-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.field-name{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--mono)}
+.field-cur{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--accent)}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:var(--border2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);cursor:pointer;transition:transform .1s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.range-hints{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);font-family:var(--mono);margin-top:3px;letter-spacing:.05em}
+
+.analyse-btn{width:100%;padding:12px;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;border-radius:8px;border:none;cursor:pointer;background:var(--accent);color:#08090c;transition:all .15s;margin-top:6px;position:relative;overflow:hidden}
+.analyse-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.analyse-btn:active{transform:translateY(0)}
+
+.result-box{border:1px solid var(--border2);border-radius:10px;padding:16px;min-height:100px;margin-bottom:14px;transition:border-color .4s,background .4s}
+.result-box.idle{background:transparent;display:flex;align-items:center;justify-content:center}
+.result-box.legit{border-color:var(--accent);background:rgba(74,222,128,.04)}
+.result-box.fraud{border-color:var(--danger);background:rgba(248,113,113,.04)}
+
+.verdict-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.verdict-text{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.verdict-text.v-legit{color:var(--accent)}
+.verdict-text.v-fraud{color:var(--danger)}
+.prob-num{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.prob-num span{font-size:20px;font-weight:500}
+
+.prob-track{height:4px;border-radius:2px;background:var(--border2);overflow:hidden;margin-bottom:4px}
+.prob-fill{height:100%;border-radius:2px;transition:width .7s cubic-bezier(.16,1,.3,1)}
+.prob-fill.legit{background:var(--accent)}
+.prob-fill.fraud{background:var(--danger)}
+.prob-ticks{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);font-family:var(--mono)}
+
+.model-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.model-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px}
+.model-name{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:4px}
+.model-verdict{font-size:13px;font-weight:600;font-family:var(--mono)}
+.model-verdict.mv-fraud{color:var(--danger)}
+.model-verdict.mv-legit{color:var(--accent)}
+.model-verdict.mv-none{color:var(--dim)}
+.model-prob{font-size:10px;color:var(--muted);font-family:var(--mono)}
+
+.factors-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.factor{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+.factor-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:3px}
+.factor-val{font-size:12px;font-weight:500;font-family:var(--mono)}
+.factor-val.rv-low{color:var(--accent)}
+.factor-val.rv-med{color:var(--warn)}
+.factor-val.rv-high{color:var(--danger)}
+
+.log-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;z-index:1}
+.log-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.clr-btn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:transparent;border:1px solid var(--border2);border-radius:5px;padding:4px 9px;cursor:pointer;transition:all .15s}
+.clr-btn:hover{color:var(--danger);border-color:var(--danger)}
+
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:400;padding:5px 8px;border-bottom:1px solid var(--border);text-align:left}
+td{font-family:var(--mono);font-size:11px;padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr{transition:background .1s}
+tr:hover td{background:var(--surface2)}
+
+.badge{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;padding:2px 7px;border-radius:3px;border:1px solid}
+.b-fraud{color:var(--danger);border-color:var(--danger);background:rgba(248,113,113,.08)}
+.b-legit{color:var(--accent);border-color:var(--accent);background:rgba(74,222,128,.08)}
+.b-high{color:var(--danger);border-color:rgba(248,113,113,.4)}
+.b-med{color:var(--warn);border-color:rgba(251,191,36,.4)}
+.b-low{color:var(--accent);border-color:rgba(74,222,128,.4)}
+
+.sparkline-wrap{margin-top:16px}
+.spark-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-family:var(--mono);margin-bottom:8px}
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:48px}
+.spark-bar{flex:1;border-radius:2px 2px 0 0;min-height:3px;transition:height .4s ease}
+
+.idle-msg{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;padding:12px 0;letter-spacing:.05em}
+
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeSlide .35s ease forwards}
+</style>
+
+<div class="wrap">
+  <div class="grid-bg"></div>
+
+  <div class="header">
+    <div class="header-left">
+      <div class="sys-label">Neural Security / v2.4.1</div>
+      <div class="sys-title">Fraud<span>Guard</span></div>
+    </div>
+    <div class="header-status">
+      <span class="live-dot"></span>
+      Models active — LR + KNN
+    </div>
+  </div>
+
+  <div class="metrics-row">
+    <div class="metric m-total"><div class="metric-val" id="s-total">0</div><div class="metric-lbl">Analysed</div></div>
+    <div class="metric m-fraud"><div class="metric-val" id="s-fraud">0</div><div class="metric-lbl">Fraudulent</div></div>
+    <div class="metric m-legit"><div class="metric-val" id="s-legit">0</div><div class="metric-lbl">Legitimate</div></div>
+    <div class="metric m-rate"><div class="metric-val" id="s-rate">—</div><div class="metric-lbl">Fraud rate</div></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-label">Transaction input</div>
+      <div class="presets">
+        <button class="pre-btn" onclick="loadPreset('normal')">Normal</button>
+        <button class="pre-btn" onclick="loadPreset('suspicious')">Suspicious</button>
+        <button class="pre-btn" onclick="loadPreset('fraud')">High risk</button>
+        <button class="pre-btn" onclick="loadPreset('night')">Night large</button>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span class="field-name">Amount (USD)</span>
+          <span class="field-cur" id="lbl-amount">$150</span>
+        </div>
+        <input type="range" id="sl-amount" min="1" max="10000" step="1" value="150" oninput="sync('amount',this.value)">
+        <div class="range-hints"><span>$1</span><span>$10,000</span></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span class="field-name">Location risk</span>
+          <span class="field-cur" id="lbl-locrisk">0.15</span>
+        </div>
+        <input type="range" id="sl-locrisk" min="0" max="1" step="0.01" value="0.15" oninput="sync('locrisk',this.value)">
+        <div class="range-hints"><span>Safe</span><span>Dangerous</span></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span class="field-name">Txn frequency (24h)</span>
+          <span class="field-cur" id="lbl-txnfreq">6</span>
+        </div>
+        <input type="range" id="sl-txnfreq" min="1" max="30" step="1" value="6" oninput="sync('txnfreq',this.value)">
+        <div class="range-hints"><span>Rare</span><span>30 / day</span></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span class="field-name">Hour of day</span>
+          <span class="field-cur" id="lbl-hour">14:00</span>
+        </div>
+        <input type="range" id="sl-hour" min="0" max="23" step="1" value="14" oninput="sync('hour',this.value)">
+        <div class="range-hints"><span>00:00</span><span>23:00</span></div>
+      </div>
+
+      <button class="analyse-btn" onclick="runPrediction()">Analyse transaction</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Prediction output</div>
+
+      <div class="result-box idle" id="result-box">
+        <span class="idle-msg">Awaiting transaction data...</span>
+      </div>
+
+      <div class="model-row">
+        <div class="model-chip">
+          <div class="model-name">Logistic regression</div>
+          <div class="model-verdict mv-none" id="m-lr">—</div>
+          <div class="model-prob" id="m-lr-p"></div>
+        </div>
+        <div class="model-chip">
+          <div class="model-name">KNN (K=5)</div>
+          <div class="model-verdict mv-none" id="m-knn">—</div>
+          <div class="model-prob" id="m-knn-p"></div>
+        </div>
+      </div>
+
+      <div class="panel-label">Risk breakdown</div>
+      <div class="factors-grid">
+        <div class="factor"><div class="factor-lbl">Amount</div><div class="factor-val" id="f-amount">—</div></div>
+        <div class="factor"><div class="factor-lbl">Location</div><div class="factor-val" id="f-loc">—</div></div>
+        <div class="factor"><div class="factor-lbl">Time of day</div><div class="factor-val" id="f-time">—</div></div>
+        <div class="factor"><div class="factor-lbl">Frequency</div><div class="factor-val" id="f-freq">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="log-panel">
+    <div class="log-head">
+      <div class="panel-label" style="margin:0">Transaction log</div>
+      <button class="clr-btn" onclick="clearLog()">Clear</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Amount</th><th>Loc risk</th><th>Freq</th><th>Hour</th>
+          <th>Prob</th><th>Risk</th><th>Verdict</th>
+        </tr></thead>
+        <tbody id="log-body">
+          <tr><td colspan="8" class="idle-msg">No transactions analysed yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sparkline-wrap">
+      <div class="spark-label">Fraud probability — last 20 transactions</div>
+      <div class="sparkline" id="sparkline">
+        <div class="idle-msg">Run predictions to see history</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const state={amount:150,locrisk:.15,txnfreq:6,hour:14};
+let total=0,fraudC=0,legitC=0;
+const hist=[];
+
+const presets={
+  normal:    {amount:52,  locrisk:.08,txnfreq:7, hour:13},
+  suspicious:{amount:850, locrisk:.62,txnfreq:2, hour:21},
+  fraud:     {amount:4800,locrisk:.94,txnfreq:1, hour:3 },
+  night:     {amount:2200,locrisk:.55,txnfreq:1, hour:2 }
+};
+
+function loadPreset(k){
+  const p=presets[k];
+  Object.assign(state,p);
+  document.getElementById('sl-amount').value=p.amount;
+  document.getElementById('sl-locrisk').value=p.locrisk;
+  document.getElementById('sl-txnfreq').value=p.txnfreq;
+  document.getElementById('sl-hour').value=p.hour;
+  updateLabels();
+}
+
+function sync(f,v){state[f]=parseFloat(v);updateLabels();}
+
+function updateLabels(){
+  document.getElementById('lbl-amount').textContent='$'+Number(Math.round(state.amount)).toLocaleString();
+  document.getElementById('lbl-locrisk').textContent=parseFloat(state.locrisk).toFixed(2);
+  document.getElementById('lbl-txnfreq').textContent=Math.round(state.txnfreq);
+  document.getElementById('lbl-hour').textContent=String(Math.round(state.hour)).padStart(2,'0')+':00';
+}
+
+function sigmoid(z){return 1/(1+Math.exp(-z));}
+
+function predictLR(a,l,f,h){
+  const sa=(a-80)/120,sl=(l-.3)/.28,sf=(f-5)/3,sh=(h-14)/6;
+  return Math.min(.99,Math.max(.01,sigmoid(-2.5+1.4*sa+2.1*sl-.6*sf-1.3*sh)));
+}
+
+function predictKNN(a,l,f,h){
+  const nb=[
+    {a:50,l:.08,f:7,h:13,fr:0},{a:80,l:.12,f:6,h:15,fr:0},
+    {a:120,l:.20,f:5,h:11,fr:0},{a:45,l:.05,f:8,h:10,fr:0},
+    {a:200,l:.35,f:4,h:17,fr:0},{a:4500,l:.92,f:1,h:3,fr:1},
+    {a:5000,l:.95,f:1,h:2,fr:1},{a:3200,l:.88,f:2,h:4,fr:1},
+    {a:800,l:.70,f:2,h:22,fr:0},{a:1500,l:.60,f:3,h:20,fr:0}
+  ];
+  const sc=(v,m,s)=>(v-m)/s;
+  const ds=nb.map(n=>({fr:n.fr,d:Math.sqrt(
+    Math.pow(sc(a,200,300)-sc(n.a,200,300),2)+
+    Math.pow(sc(l,.3,.28)-sc(n.l,.3,.28),2)+
+    Math.pow(sc(f,5,3)-sc(n.f,5,3),2)+
+    Math.pow(sc(h,14,6)-sc(n.h,14,6),2)
+  )})).sort((a,b)=>a.d-b.d).slice(0,5);
+  const fv=ds.filter(d=>d.fr===1).length;
+  return Math.min(.97,Math.max(.03,fv/5*.85+predictLR(a,l,f,h)*.15));
+}
+
+function riskCls(p){return p>=.65?'high':p>=.3?'med':'low';}
+
+function runPrediction(){
+  const {amount,locrisk,txnfreq,hour}=state;
+  const pLR=predictLR(amount,locrisk,txnfreq,hour);
+  const pKNN=predictKNN(amount,locrisk,txnfreq,hour);
+  const avg=(pLR+pKNN)/2;
+  const isFraud=avg>=.5;
+  const pct=(avg*100).toFixed(1);
+  const rc=riskCls(avg);
+
+  total++;isFraud?fraudC++:legitC++;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-fraud').textContent=fraudC;
+  document.getElementById('s-legit').textContent=legitC;
+  document.getElementById('s-rate').textContent=(fraudC/total*100).toFixed(1)+'%';
+
+  const box=document.getElementById('result-box');
+  box.className='result-box '+(isFraud?'fraud':'legit')+' fade-in';
+  box.innerHTML=`
+    <div class="verdict-row">
+      <div class="verdict-text ${isFraud?'v-fraud':'v-legit'}">${isFraud?'Fraudulent':'Legitimate'}</div>
+      <div class="prob-num"><span style="color:${isFraud?'var(--danger)':'var(--accent)'}">${pct}</span>% fraud prob</div>
+    </div>
+    <div class="prob-track"><div class="prob-fill ${isFraud?'fraud':'legit'}" id="pfill" style="width:0%"></div></div>
+    <div class="prob-ticks"><span>0%</span><span>— 50% threshold —</span><span>100%</span></div>`;
+  setTimeout(()=>{const f=document.getElementById('pfill');if(f)f.style.width=pct+'%';},30);
+
+  const lrEl=document.getElementById('m-lr');
+  lrEl.textContent=pLR>=.5?'Fraud':'Legit';
+  lrEl.className='model-verdict '+(pLR>=.5?'mv-fraud':'mv-legit');
+  document.getElementById('m-lr-p').textContent=(pLR*100).toFixed(1)+'% confidence';
+  const knnEl=document.getElementById('m-knn');
+  knnEl.textContent=pKNN>=.5?'Fraud':'Legit';
+  knnEl.className='model-verdict '+(pKNN>=.5?'mv-fraud':'mv-legit');
+  document.getElementById('m-knn-p').textContent=(pKNN*100).toFixed(1)+'% confidence';
+
+  const fAmt=amount>=1500?'rv-high':amount>=200?'rv-med':'rv-low';
+  const fLoc=locrisk>=.7?'rv-high':locrisk>=.4?'rv-med':'rv-low';
+  const h=Math.round(hour);
+  const fTime=(h<=5||h>=23)?'rv-high':(h<=8||h>=21)?'rv-med':'rv-low';
+  const fFreq=txnfreq<=2?'rv-high':txnfreq<=4?'rv-med':'rv-low';
+
+  document.getElementById('f-amount').className='factor-val '+fAmt;
+  document.getElementById('f-amount').textContent='$'+Number(Math.round(amount)).toLocaleString()+' — '+(fAmt==='rv-high'?'High':fAmt==='rv-med'?'Medium':'Low');
+  document.getElementById('f-loc').className='factor-val '+fLoc;
+  document.getElementById('f-loc').textContent=parseFloat(locrisk).toFixed(2)+' — '+(fLoc==='rv-high'?'High':fLoc==='rv-med'?'Medium':'Low');
+  document.getElementById('f-time').className='factor-val '+fTime;
+  document.getElementById('f-time').textContent=String(Math.round(hour)).padStart(2,'0')+':00 — '+(fTime==='rv-high'?'High':fTime==='rv-med'?'Medium':'Low');
+  document.getElementById('f-freq').className='factor-val '+fFreq;
+  document.getElementById('f-freq').textContent=Math.round(txnfreq)+' txn — '+(fFreq==='rv-high'?'High':fFreq==='rv-med'?'Medium':'Low');
+
+  hist.push({n:total,amount,locrisk,txnfreq,hour,avg,isFraud,rc});
+  renderLog();
+  renderSpark();
+}
+
+function renderLog(){
+  const tb=document.getElementById('log-body');
+  const rows=hist.slice().reverse().slice(0,10).map(h=>`<tr class="fade-in">
+    <td style="color:var(--muted)">${String(h.n).padStart(3,'0')}</td>
+    <td>$${Number(Math.round(h.amount)).toLocaleString()}</td>
+    <td>${parseFloat(h.locrisk).toFixed(2)}</td>
+    <td>${Math.round(h.txnfreq)}</td>
+    <td>${String(Math.round(h.hour)).padStart(2,'0')}:00</td>
+    <td style="color:${h.isFraud?'var(--danger)':'var(--accent)'};font-weight:500">${(h.avg*100).toFixed(1)}%</td>
+    <td><span class="badge b-${h.rc}">${h.rc.toUpperCase()}</span></td>
+    <td><span class="badge ${h.isFraud?'b-fraud':'b-legit'}">${h.isFraud?'Fraud':'Legit'}</span></td>
+  </tr>`).join('');
+  tb.innerHTML=rows||'<tr><td colspan="8" class="idle-msg">No transactions yet</td></tr>';
+}
+
+function renderSpark(){
+  const sp=document.getElementById('sparkline');
+  const recent=hist.slice(-20);
+  sp.innerHTML=recent.map(h=>{
+    const px=Math.max(3,Math.round(h.avg*48));
+    const col=h.isFraud?'var(--danger)':'var(--accent)';
+    return `<div class="spark-bar" style="height:${px}px;background:${col};opacity:.75"></div>`;
+  }).join('');
+}
+
+function clearLog(){
+  hist.length=0;total=0;fraudC=0;legitC=0;
+  ['s-total','s-fraud','s-legit'].forEach(id=>document.getElementById(id).textContent='0');
+  document.getElementById('s-rate').textContent='—';
+  document.getElementById('log-body').innerHTML='<tr><td colspan="8" class="idle-msg">No transactions analysed yet</td></tr>';
+  document.getElementById('sparkline').innerHTML='<div class="idle-msg">Run predictions to see history</div>';
+  document.getElementById('result-box').className='result-box idle';
+  document.getElementById('result-box').innerHTML='<span class="idle-msg">Awaiting transaction data...</span>';
+  ['m-lr','m-knn'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).className='model-verdict mv-none';});
+  ['m-lr-p','m-knn-p'].forEach(id=>document.getElementById(id).textContent='');
+  ['f-amount','f-loc','f-time','f-freq'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).className='factor-val';});
+}
+
+updateLabels();
+</script>
